@@ -1,0 +1,9 @@
+services:
+  sniffle-builder:
+    image: sniffle
+    build: .
+    privileged: true
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./fw:/src

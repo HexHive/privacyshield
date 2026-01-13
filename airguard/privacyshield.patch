@@ -1,0 +1,116 @@
+diff --git a/app/build.gradle b/app/build.gradle
+index ca0d6b2..2f4ad81 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -99,6 +99,7 @@ dependencies {
+     implementation 'androidx.cardview:cardview:1.0.0'
+     implementation 'androidx.recyclerview:recyclerview:1.4.0'
+     implementation "androidx.profileinstaller:profileinstaller:1.4.1"
++    implementation 'com.android.volley:volley:1.2.1'
+ 
+     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
+@@ -170,4 +171,4 @@ dependencies {
+ 
+ ksp {
+     arg("room.schemaLocation", "$projectDir/schemas")
+-}
+\ No newline at end of file
++}
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 83b7fad..2d9f761 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -58,7 +58,8 @@
+         android:dataExtractionRules="@xml/data_extraction_rules"
+         android:fullBackupContent="false"
+         android:hardwareAccelerated="true"
+-        tools:targetApi="tiramisu">
++        tools:targetApi="tiramisu"
++        android:usesCleartextTraffic="true">
+ 
+         <activity
+             android:name=".ui.TrackingNotificationActivity"
+@@ -150,4 +151,4 @@
+         </service>
+     </application>
+ 
+-</manifest>
+\ No newline at end of file
++</manifest>
+diff --git a/app/src/main/java/de/seemoo/at_tracking_detection/detection/BackgroundBluetoothScanner.kt b/app/src/main/java/de/seemoo/at_tracking_detection/detection/BackgroundBluetoothScanner.kt
+index 81d648a..7869fe1 100644
+--- a/app/src/main/java/de/seemoo/at_tracking_detection/detection/BackgroundBluetoothScanner.kt
++++ b/app/src/main/java/de/seemoo/at_tracking_detection/detection/BackgroundBluetoothScanner.kt
+@@ -9,6 +9,11 @@ import android.content.Context
+ import android.os.Handler
+ import android.os.Looper
+ import android.os.PowerManager
++import com.android.volley.toolbox.Volley
++import com.android.volley.toolbox.JsonObjectRequest
++import com.android.volley.Request
++import com.android.volley.Response
++import org.json.JSONObject
+ import de.seemoo.at_tracking_detection.ATTrackingDetectionApplication
+ import de.seemoo.at_tracking_detection.BuildConfig
+ import de.seemoo.at_tracking_detection.database.models.Beacon
+@@ -40,7 +45,9 @@ import java.time.LocalDateTime
+ import java.util.concurrent.ConcurrentHashMap
+ import kotlin.coroutines.resume
+ import kotlin.coroutines.suspendCoroutine
++import kotlin.io.encoding.Base64
+ 
++@OptIn(kotlin.ExperimentalStdlibApi::class, kotlin.io.encoding.ExperimentalEncodingApi::class)
+ object BackgroundBluetoothScanner {
+     private var bluetoothAdapter: BluetoothAdapter? = null
+ 
+@@ -49,6 +56,9 @@ object BackgroundBluetoothScanner {
+ 
+     private var applicationContext: Context = ATTrackingDetectionApplication.getAppContext()
+ 
++    private val reqQueue = Volley.newRequestQueue(applicationContext)
++    private val psURL = "http://<your-server-url-here>/api/v1/airtag"
++
+     // Mutexes for scheduling when adding to the database to avoid double entries
+     private val insertScanResultMutex = Mutex()
+     private val beaconMutex = Mutex()
+@@ -373,6 +383,32 @@ object BackgroundBluetoothScanner {
+                     null,
+                     null
+                 ) // return when device does not qualify to be saved
++                if (deviceSaved.deviceType == DeviceType.AIRTAG) {
++                    // For PrivacyShield, we for now only want to relay AirTags
++                    Timber.d("##################################### PrivacyShield")
++                    val address = wrappedScanResult.scanResult.getDevice().getAddress()
++                    val rssi = wrappedScanResult.rssiValue
++                    Timber.d("AirTag ${address}, RSSI ${rssi}")
++                    if (rssi > -50) {
++                        // We only want to relay our own AirTags, i.e., AirTags that are "close enough"
++                        val addressBytes = address.replace(":", "").hexToByteArray()
++                        val payloadBytes = wrappedScanResult.scanResult?.getScanRecord()?.getBytes()!!.slice(0..30).toByteArray()
++                        val data = addressBytes.reversedArray() + payloadBytes
++                        Timber.d("Post AirTag base64:  ${Base64.Default.encode(data)}")
++                        val jsonObj = JSONObject()
++                        jsonObj.put("data", Base64.Default.encode(data))
++                        val jsonObjReq = JsonObjectRequest(Request.Method.POST, psURL, jsonObj,
++                            { response ->
++                                Timber.d("Response: ${response}")
++                            },
++                            { error ->
++                                Timber.d("Error: ${error.message}")
++                            }
++                        )
++                        reqQueue.add(jsonObjReq)
++                    }
++                    Timber.d("##################################### PrivacyShield")
++                }
+ 
+                 // set locationId to null if gps location could not be retrieved
+                 val locId: Int? = saveLocation(
+@@ -647,4 +683,4 @@ object BackgroundBluetoothScanner {
+             }
+         }
+     }
+-}
+\ No newline at end of file
++}

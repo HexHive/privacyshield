@@ -1,0 +1,6 @@
+[submodule "findmy/findmypy-upstream"]
+	path = findmy/findmypy-upstream
+	url = https://github.com/malmeloo/FindMy.py.git
+[submodule "airguard/airguard-upstream"]
+	path = airguard/airguard-upstream
+	url = https://github.com/seemoo-lab/airguard

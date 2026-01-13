@@ -1,0 +1,89 @@
+menu "Relay FW Configuration"
+
+    menu "WiFi Configuration"
+        comment "WiFi Configuration"
+
+        config ESP_WIFI_SSID
+            string "WiFi AP SSID"
+            default "ssid"
+            help
+                SSID (network name) to connect to.
+
+        config ESP_WIFI_PASSWD
+            string "WiFi AP Password"
+            default "password"
+            help
+                WiFi password to use.
+
+        config ESP_WIFI_RETRIES
+            int "Maximum retry"
+            default 5
+            help
+                Set the maximum retry value to prevent the station from continuously
+                attempting to reconnect to the Access Point (AP) when the AP doesn't exist.
+    endmenu
+
+    menu "HTTP Client Configuration"
+        comment "HTTP Client Configuration"
+
+        config HTTP_BUFFER_SIZE
+            int "Buffer size for HTTP response data"
+            default 1024
+            help
+                The size for the HTTP response data buffer.
+
+        config RELAY_ENDPOINT_BASE_URL
+            string "Relay server endpoint URL"
+            default "http://endpoint/"
+            help
+                The URL for the beacon relay server.
+
+        config RELAY_ENDPOINT_PORT
+            int "Relay server endpoint port"
+            default 80
+            help
+                The port for the beacon relay endpoint.
+
+        config NUM_TAGS
+            int "Number of tags to retrieve in a single request"
+            default 5
+            help
+                The number of tags to retrieve in a single request.
+
+        config VALID_TAGS_ONLY
+            bool "Retrieve only valid tags"
+            default y
+            help
+                Whether to only retrieve currently valid tags from the server.
+
+        config ROTATE_TAGS
+            bool "Rotate retrieved tags"
+            default y
+            help
+                Whether to instruct the server to rotate through the existing
+                tags when retrieving only a subset.
+
+        config RELAY_DOWNLOAD_INTERVAL
+            int "Download interval (in ms)"
+            default 10000
+            help
+                The interval (in ms) after which we re-download new AirTag data.
+    endmenu
+
+    menu "BLE advertiser configuration"
+        comment "BLE advertiser configuration"
+
+        config BLE_ADVERTISEMENT_INTERVAL
+            int "Advertisement interval (in ms)"
+            default 2000
+            help
+                The interval (in ms) in which the chip emits the advertisements.
+
+        config BLE_ADVERTISEMENT_DURATION
+            int "Advertisement duration (in ms)"
+            default 1000
+            help
+                The duration (in ms) for which to advertise a payload before
+                switching over to the next payload.
+    endmenu
+endmenu

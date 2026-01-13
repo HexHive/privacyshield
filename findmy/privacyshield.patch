@@ -1,0 +1,24 @@
+diff --git a/findmy/reports/reports.py b/findmy/reports/reports.py
+index 931ad40..725a588 100644
+--- a/findmy/reports/reports.py
++++ b/findmy/reports/reports.py
+@@ -299,12 +299,13 @@ class LocationReportsFetcher:
+         if isinstance(device, RollingKeyPairSource):
+             return reports
+ 
+-        res: dict[HasHashedPublicKey, list[LocationReport]] = {key: [] for key in keys}
+-        for report in reports:
+-            for key in res:
+-                if key.hashed_adv_key_bytes == report.hashed_adv_key_bytes:
+-                    res[key].append(report)
+-                    break
++        res: dict[HasHashedPublicKey, list[LocationReport]] = {
++                key: list(filter(
++                        lambda report, hashed_key=key.hashed_adv_key_bytes:
++                            report.hashed_adv_key_bytes == hashed_key,
++                        reports))
++                for key in keys
++        }
+         return res
+ 
+     async def _fetch_reports(
