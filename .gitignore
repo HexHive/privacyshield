@@ -2,6 +2,9 @@
 simplelink*.run
 uniflash*.run
 
+### Runtime stuff
+data
+
 ### Assembler ###
 *.exe
 *.o
