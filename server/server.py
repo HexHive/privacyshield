@@ -258,7 +258,7 @@ def add_tag() -> Tuple[str, int]:
 @app.route("/api/v1/airtag/", methods=["GET"])
 def get_tags() -> Response:
     """REST API function that returns a list of tags.
-    The function has to parameters:
+    The function has the following parameters:
     - valid: truthy value on whether to return only currently valid tags (default: False)
     - num: number of tags to return (default: 0 which indicates to return all tags)
     - use_offset: truthy value on whether to round-robin iterate through the tags to return
