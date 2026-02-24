@@ -23,22 +23,35 @@ system.
 
 ## How to Use
 
-Run the server executable on a server that is reachable from your sniffers and
-relayers.
-You can launch the server by installing the necessary requirements
-(`pip3 install -r server/requirements.txt`), ideally in a Python virtualenv,
-and then running `python3 server/server.py`.
+Run the relay server application on a server that is reachable from both your
+clients and the relays.
+You can simply start the server with the given Makefile via `make run-server`.
+Make sure to take note of the server's URL (the domain if you've set up DNS
+entries or otherwise the IP), including the port used.
+You will need this URL for configuring the client application and relay
+firmware.
 
-Update the relay-firmware configuration to add the server endpoint (e.g., by
-running `make sh` in the relay-fw subdirectory and then configuring the
-firmware via `idf.py menuconfig`).
-Build and flash the firmware to an ESP32 dev board via `make build` and
+Update the relay-firmware configuration to add the server endpoint and WiFi
+credentials.
+You can either add the corresponding config values directly to the
+`sdkconfig.defaults` file or use the ESP-IDF menuconfig interface.
+We recommend the latter, as it's significantly easier.
+Do so by running `make sh` in the relay-fw subdirectory and then configuring
+the firmware via `idf.py menuconfig`.
+In the menu, navigate to the "Relay FW Configuration" submenu and configure the
+server URL and WiFi credentials there.
+Then, build and flash the firmware to an ESP32 dev board via `make build` and
 `make flash` (or just `make flash`, this implies building).
+Once you configured the firmware, you can also build it from the top-level
+Makefile via `make relay-fw.bin` but you'd need to flash it manually then.
 
 Build the AirGuard app for recording and reporting BLE beacons according to
 the project's instructions and run it on an Android phone.
-
-The AirGuard app should now report AirTag beacons to the server, from where
+First, adjust the `psURL` variable in
+[the patch file](./airguard/privacyshield.patch) to point to your server URL.
+Then, you can build the app via `make airguard.apk` and install it on your
+phone.
+The AirGuard app should then report AirTag beacons to the server, from where
 one or multiple relays regularly fetch new advertisements and relay them.
 Confirm in your Find My application on iOS or macOS that the AirTag now shows
 up at the relayed location.
