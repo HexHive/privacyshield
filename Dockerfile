@@ -61,7 +61,9 @@ RUN --mount=type=bind,source=./relay-fw/src,target=/relay-fw,rw \
     . ${IDF_PATH}/export.sh && \
     cd /relay-fw && \
     idf.py build && \
-    cp -av build/relay-fw.bin /relay-fw.bin
+    cp -av build/bootloader/bootloader.bin           /bootloader.bin && \
+    cp -av build/partition_table/partition-table.bin /partition-table.bin && \
+    cp -av build/relay-fw.bin                        /relay-fw.bin
 
 
 ################################################################################
@@ -72,7 +74,7 @@ FROM docker.io/debian:13 AS exporter
 # Copy built artifacts from the respective builders
 COPY --from=airguard-builder /airguard.apk /artifacts/airguard.apk
 COPY --from=findmy-builder /*.whl /artifacts/
-COPY --from=firmware-builder /relay-fw.bin /artifacts/relay-fw.bin
+COPY --from=firmware-builder /*.bin /artifacts/
 
 # Copy the artifacts to the host, assuming /mnt is a bind mount
 CMD ["/bin/bash", "-c", "cp -av /artifacts/* /mnt/"]

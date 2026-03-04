@@ -1,5 +1,5 @@
 # call make with `make DOCKER=podman <target>` to use podman instead of docker
-DOCKER ?= sudo docker
+DOCKER ?= podman
 SERVER_PORT ?= 8000
 
 .PHONY: all setup run-server
