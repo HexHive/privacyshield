@@ -32,11 +32,11 @@ menu "Relay FW Configuration"
             help
                 The size for the HTTP response data buffer.
 
-        config RELAY_ENDPOINT_BASE_URL
-            string "Relay server endpoint URL"
-            default "http://endpoint/"
+        config RELAY_ENDPOINT_HOST
+            string "Relay server Host"
+            default "example.com"
             help
-                The URL for the beacon relay server.
+                The host for the beacon relay server (domain or IP).
 
         config RELAY_ENDPOINT_PORT
             int "Relay server endpoint port"

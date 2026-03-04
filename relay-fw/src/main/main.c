@@ -33,7 +33,8 @@
 #define WIFI_AP_PASSWD          CONFIG_ESP_WIFI_PASSWD
 #define WIFI_CONNECTION_RETRIES CONFIG_ESP_WIFI_RETRIES
 #define HTTP_BUFFER_SIZE        CONFIG_HTTP_BUFFER_SIZE
-#define RELAY_ENDPOINT_BASE_URL CONFIG_RELAY_ENDPOINT_BASE_URL
+#define RELAY_ENDPOINT_API      "/api/v1/airtag"
+#define RELAY_ENDPOINT_HOST     CONFIG_RELAY_ENDPOINT_HOST
 #define RELAY_ENDPOINT_PORT     CONFIG_RELAY_ENDPOINT_PORT
 #define RELAY_DOWNLOAD_INTERVAL CONFIG_RELAY_DOWNLOAD_INTERVAL
 #if CONFIG_VALID_TAGS_ONLY
@@ -48,10 +49,12 @@
 #define ROTATE_TAGS "false"
 #endif /* CONFIG_ROTATE_TAGS */
 /* clang-format off */
-#define RELAY_ENDPOINT_URL      \
-    RELAY_ENDPOINT_BASE_URL     \
-    "?valid="  VALID_TAGS_ONLY  \
-    "&num="    STR(NUM_TAGS)    \
+#define RELAY_ENDPOINT_URL        \
+    "http://" RELAY_ENDPOINT_HOST \
+    ":" STR(RELAY_ENDPOINT_PORT)  \
+    RELAY_ENDPOINT_API            \
+    "?valid="  VALID_TAGS_ONLY    \
+    "&num="    STR(NUM_TAGS)      \
     "&offset=" ROTATE_TAGS
 /* clang-format on */
 #define BLE_ADVERTISEMENT_INTERVAL CONFIG_BLE_ADVERTISEMENT_INTERVAL
@@ -229,7 +232,6 @@ static void http_client_task(void *params) {
     char                     http_buffer[HTTP_BUFFER_SIZE + 1] = {0};
     esp_http_client_config_t http_config                       = {
                               .url                   = RELAY_ENDPOINT_URL,
-                              .port                  = RELAY_ENDPOINT_PORT,
                               .method                = HTTP_METHOD_GET,
                               .disable_auto_redirect = false,
                               .event_handler         = &http_event_handler,
